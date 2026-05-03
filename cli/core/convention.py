@@ -49,19 +49,25 @@ class ConventionChecker:
         return any(f.endswith(".py") for f in files)
     
     def _run_eslint(self) -> str:
-        result = subprocess.run(
-            ["npx", "eslint", "--ext", ".js,.ts,.jsx,.tsx", "."],
-            capture_output=True, text=True
-        )
-        if result.returncode == 0:
-            return "[ESLint] 컨벤션 위반 없음"
-        return f"[ESLint] 위반 사항:\n{result.stdout}"
+        try:
+            result = subprocess.run(
+                ["npx", "eslint", "--ext", ".js,.ts,.jsx,.tsx", "."],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                return "[ESLint] 컨벤션 위반 없음"
+            return f"[ESLint] 위반 사항:\n{result.stdout}"
+        except FileNotFoundError:
+            return "[ESLint] 설치되지 않아 스킵합니다."
 
     def _run_flake8(self) -> str:
-        result = subprocess.run(
-            ["flake8", "--max-line-length=100", "."],
-            capture_output=True, text=True
-        )
-        if result.returncode == 0:
-            return "[Flake8] 컨벤션 위반 없음"
-        return f"[Flake8] 위반 사항:\n{result.stdout}"
+        try:
+            result = subprocess.run(
+                ["flake8", "--max-line-length=100", "."],
+                capture_output=True, text=True
+            )
+            if result.returncode == 0:
+                return "[Flake8] 컨벤션 위반 없음"
+            return f"[Flake8] 위반 사항:\n{result.stdout}"
+        except FileNotFoundError:
+            return "[Flake8] 설치되지 않아 스킵합니다."
