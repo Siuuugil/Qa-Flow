@@ -24,7 +24,6 @@ class Reporter:
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report, f, ensure_ascii=False, indent=2)
 
-        # 터미널에 요약 테이블 출력
         table = Table(title="QA-Flow 리포트 요약")
         table.add_column("항목", style="cyan")
         table.add_column("결과", style="white")

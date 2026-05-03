@@ -6,6 +6,7 @@ import os
 
 console = Console()
 
+
 @click.command()
 @click.option("--mode",
               type=click.Choice(["ai-only", "full"]),
@@ -40,13 +41,12 @@ def scan(mode, report, provider, focus, file):
         console.print(f"Focus: [yellow]{focus or 'default'}[/yellow]\n")
 
         if mode == "full":
-            run_convention_check_file(file)
-            run_ai_review_file(ai_provider, focus, file)
+            convention_result = run_convention_check_file(file)
+            ai_result = run_ai_review_file(ai_provider, focus, file)
             if report:
-                run_report()
+                run_report(ai_result, convention_result)
         else:
             run_ai_review_file(ai_provider, focus, file)
-
 
     else:
         console.print(f"\n[bold cyan]QA-Flow 분석 시작[/bold cyan]")
@@ -58,10 +58,10 @@ def scan(mode, report, provider, focus, file):
         if mode == "ai-only":
             run_ai_review(ai_provider, focus)
         elif mode == "full":
-            run_convention_check()
-            run_ai_review(ai_provider, focus)
+            convention_result = run_convention_check()
+            ai_result = run_ai_review(ai_provider, focus)
             if report:
-                run_report()
+                run_report(ai_result, convention_result)
 
 def run_ai_review(provider: str, focus: str = None):
     """AI 코드 리뷰 실행"""
@@ -79,25 +79,23 @@ def run_ai_review(provider: str, focus: str = None):
 def run_ai_review_file(provider: str, focus: str = None, file: str = None):
     """특정 파일 AI 분석"""
 
-    # 확장자 필터링
     allowed_extensions = (
         ".py", ".java", ".js", ".ts", ".jsx", ".tsx",
         ".go", ".rs", ".kt", ".swift", ".cpp", ".c", ".cs"
     )
     if not file.endswith(allowed_extensions):
         console.print(f"[red]지원하지 않는 파일 형식입니다: {file}[/red]")
-        console.print(f"[dim]지원 형식: {', '.join(allowed_extensions)}[/dim]")
-        return
+        return ""
 
     try:
         with open(file, "r", encoding="utf-8") as f:
             code = f.read()
     except FileNotFoundError:
         console.print(f"[red]파일을 찾을 수 없습니다: {file}[/red]")
-        return
+        return ""
     except Exception as e:
         console.print(f"[red]파일 읽기 오류: {str(e)}[/red]")
-        return
+        return ""
 
     from cli.core.ai_review import AIReview
 
@@ -106,53 +104,70 @@ def run_ai_review_file(provider: str, focus: str = None, file: str = None):
         result = reviewer.provider.review(code)
 
     console.print(result)
+    return result
+
 
 def run_convention_check():
     """컨벤션 체크 실행"""
     console.print("[bold]컨벤션 체크 실행 중...[/bold]")
 
     from cli.core.convention import ConventionChecker
+
     checker = ConventionChecker()
     result = checker.check()
 
     console.print(result)
+    return result
+
 
 def run_convention_check_file(file: str):
     """특정 파일 컨벤션 체크"""
-    console.print(f"[bold]컨벤션 체크 실행 중...[/bold]")
+    console.print("[bold]컨벤션 체크 실행 중...[/bold]")
 
     import subprocess
 
+    result = ""
+
     if file.endswith((".js", ".ts", ".jsx", ".tsx")):
-        result = subprocess.run(
-            ["npx", "eslint", file],
-            capture_output=True, text=True
-        )
-        if result.returncode == 0:
-            console.print("[ESLint] 컨벤션 위반 없음")
-        else:
-            console.print(f"[ESLint] 위반 사항:\n{result.stdout}")
+        try:
+            r = subprocess.run(
+                ["npx", "eslint", file],
+                capture_output=True, text=True
+            )
+            if r.returncode == 0:
+                result = "[ESLint] 컨벤션 위반 없음"
+            else:
+                result = f"[ESLint] 위반 사항:\n{r.stdout}"
+        except FileNotFoundError:
+            result = "[ESLint] 설치되지 않아 스킵합니다."
 
     elif file.endswith(".py"):
-        result = subprocess.run(
-            ["flake8", "--max-line-length=100", file],
-            capture_output=True, text=True
-        )
-        if result.returncode == 0:
-            console.print("[Flake8] 컨벤션 위반 없음")
-        else:
-            console.print(f"[Flake8] 위반 사항:\n{result.stdout}")
+        try:
+            r = subprocess.run(
+                ["flake8", "--max-line-length=100", file],
+                capture_output=True, text=True
+            )
+            if r.returncode == 0:
+                result = "[Flake8] 컨벤션 위반 없음"
+            else:
+                result = f"[Flake8] 위반 사항:\n{r.stdout}"
+        except FileNotFoundError:
+            result = "[Flake8] 설치되지 않아 스킵합니다."
 
     elif file.endswith(".java"):
-        console.print("[Java] 컨벤션 체크는 AI 리뷰로 대체합니다.")
+        result = "[Java] 컨벤션 체크는 AI 리뷰로 대체합니다."
 
-def run_report():
+    console.print(result)
+    return result
+
+
+def run_report(ai_result: str = "", convention_result: str = ""):
     """리포트 생성"""
     console.print("[bold]리포트 생성 중...[/bold]")
 
     from cli.core.reporter import Reporter
+
     reporter = Reporter()
-    reporter.generate()
+    reporter.generate(ai_result=ai_result, convention_result=convention_result)
 
     console.print("[green]리포트 생성 완료![/green]")
-
