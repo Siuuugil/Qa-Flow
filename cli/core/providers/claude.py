@@ -34,3 +34,15 @@ class ClaudeProvider:
             ]
         )
         return message.content[0].text
+    
+    def chat(self, history: list) -> str:
+        try:
+            response = self.client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=1024,
+                system=self.system_prompt,
+                messages=history
+            )
+            return response.content[0].text
+        except Exception as e:
+            return f"Claude API 오류: {str(e)}"

@@ -61,7 +61,7 @@ SUPABASE_URL={supabase_url}
 SUPABASE_KEY={supabase_key}
 """
 
-    with open(".env", "w") as f:
+    with open(".env", "w", encoding="utf-8") as f:
         f.write(env_content)
 
     console.print("\n[bold green]설정 완료! .env 파일이 생성됐어요.[/bold green]")

@@ -1,71 +1,158 @@
 import click
 from rich.console import Console
 from dotenv import load_dotenv
+from pathlib import Path
 import os
 
 console = Console()
 
 @click.command()
-@click.option("--mode", 
-              type=click.Choice(["ai-only", "full"]), 
+@click.option("--mode",
+              type=click.Choice(["ai-only", "full"]),
               default="ai-only",
               help="실행 모드 선택")
-@click.option("--report", 
-              is_flag=True, 
+@click.option("--report",
+              is_flag=True,
               default=False,
               help="리포트 파일 생성")
 @click.option("--provider",
               type=click.Choice(["claude", "gemini"]),
               default=None,
               help="AI Provider 선택 (기본값: .env 설정 따름)")
-def scan(mode, report, provider):
+@click.option("--focus",
+              type=click.Choice(["structure", "convention", "security", "bug", "qa", "dev", "performance", "test", "general"]),
+              default=None,
+              help="리뷰 관점 선택")
+@click.option("--file",
+              default=None,
+              help="특정 파일 직접 분석 (git diff 없이)")
+def scan(mode, report, provider, focus, file):
     """코드 분석 실행"""
-    
-    load_dotenv()
 
-    # provider 결정 (.env 또는 옵션)
-    ai_provider = provider or os.getenv("AI_PROVIDER", "claude")
-    
-    console.print(f"\n[bold cyan]QA-Flow 분석 시작[/bold cyan]")
-    console.print(f"모드: [yellow]{mode}[/yellow]")
-    console.print(f"AI Provider: [yellow]{ai_provider}[/yellow]")
-    console.print(f"리포트 생성: [yellow]{report}[/yellow]\n")
+    load_dotenv(dotenv_path=Path.cwd() / ".env", encoding="utf-8")
 
-    if mode == "ai-only":
-        run_ai_review(ai_provider)
-    
-    elif mode == "full":
-        run_convention_check()
-        run_ai_review(ai_provider)
-        if report:
-            run_report()
+    ai_provider = provider or os.getenv("AI_PROVIDER", "gemini")
 
-def run_ai_review(provider: str):
+    if file:
+        console.print(f"\n[bold cyan]파일 분석 모드[/bold cyan]")
+        console.print(f"파일: [yellow]{file}[/yellow]")
+        console.print(f"AI Provider: [yellow]{ai_provider}[/yellow]")
+        console.print(f"Focus: [yellow]{focus or 'default'}[/yellow]\n")
+
+        if mode == "full":
+            run_convention_check_file(file)
+            run_ai_review_file(ai_provider, focus, file)
+            if report:
+                run_report()
+        else:
+            run_ai_review_file(ai_provider, focus, file)
+
+
+    else:
+        console.print(f"\n[bold cyan]QA-Flow 분석 시작[/bold cyan]")
+        console.print(f"모드: [yellow]{mode}[/yellow]")
+        console.print(f"AI Provider: [yellow]{ai_provider}[/yellow]")
+        console.print(f"Focus: [yellow]{focus or 'default'}[/yellow]")
+        console.print(f"리포트 생성: [yellow]{report}[/yellow]\n")
+
+        if mode == "ai-only":
+            run_ai_review(ai_provider, focus)
+        elif mode == "full":
+            run_convention_check()
+            run_ai_review(ai_provider, focus)
+            if report:
+                run_report()
+
+def run_ai_review(provider: str, focus: str = None):
     """AI 코드 리뷰 실행"""
     console.print("[bold]AI 코드 리뷰 실행 중...[/bold]")
-    
+
     from cli.core.ai_review import AIReview
-    reviewer = AIReview(provider=provider)
-    result = reviewer.review()
-    
+
+    with console.status("[bold green]AI가 코드를 분석하고 있습니다..."):
+        reviewer = AIReview(provider=provider, focus=focus)
+        result = reviewer.review()
+
+    console.print(result)
+    return result
+
+def run_ai_review_file(provider: str, focus: str = None, file: str = None):
+    """특정 파일 AI 분석"""
+
+    # 확장자 필터링
+    allowed_extensions = (
+        ".py", ".java", ".js", ".ts", ".jsx", ".tsx",
+        ".go", ".rs", ".kt", ".swift", ".cpp", ".c", ".cs"
+    )
+    if not file.endswith(allowed_extensions):
+        console.print(f"[red]지원하지 않는 파일 형식입니다: {file}[/red]")
+        console.print(f"[dim]지원 형식: {', '.join(allowed_extensions)}[/dim]")
+        return
+
+    try:
+        with open(file, "r", encoding="utf-8") as f:
+            code = f.read()
+    except FileNotFoundError:
+        console.print(f"[red]파일을 찾을 수 없습니다: {file}[/red]")
+        return
+    except Exception as e:
+        console.print(f"[red]파일 읽기 오류: {str(e)}[/red]")
+        return
+
+    from cli.core.ai_review import AIReview
+
+    with console.status(f"[bold green]AI가 {file} 을 분석하고 있습니다..."):
+        reviewer = AIReview(provider=provider, focus=focus)
+        result = reviewer.provider.review(code)
+
     console.print(result)
 
 def run_convention_check():
     """컨벤션 체크 실행"""
     console.print("[bold]컨벤션 체크 실행 중...[/bold]")
-    
+
     from cli.core.convention import ConventionChecker
     checker = ConventionChecker()
     result = checker.check()
-    
+
     console.print(result)
+
+def run_convention_check_file(file: str):
+    """특정 파일 컨벤션 체크"""
+    console.print(f"[bold]컨벤션 체크 실행 중...[/bold]")
+
+    import subprocess
+
+    if file.endswith((".js", ".ts", ".jsx", ".tsx")):
+        result = subprocess.run(
+            ["npx", "eslint", file],
+            capture_output=True, text=True
+        )
+        if result.returncode == 0:
+            console.print("[ESLint] 컨벤션 위반 없음")
+        else:
+            console.print(f"[ESLint] 위반 사항:\n{result.stdout}")
+
+    elif file.endswith(".py"):
+        result = subprocess.run(
+            ["flake8", "--max-line-length=100", file],
+            capture_output=True, text=True
+        )
+        if result.returncode == 0:
+            console.print("[Flake8] 컨벤션 위반 없음")
+        else:
+            console.print(f"[Flake8] 위반 사항:\n{result.stdout}")
+
+    elif file.endswith(".java"):
+        console.print("[Java] 컨벤션 체크는 AI 리뷰로 대체합니다.")
 
 def run_report():
     """리포트 생성"""
     console.print("[bold]리포트 생성 중...[/bold]")
-    
+
     from cli.core.reporter import Reporter
     reporter = Reporter()
     reporter.generate()
-    
+
     console.print("[green]리포트 생성 완료![/green]")
+
