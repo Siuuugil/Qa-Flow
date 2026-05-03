@@ -23,22 +23,31 @@ class ConventionChecker:
 
         return "\n".join(results)
 
+    def _get_changed_files(self) -> list:
+        import subprocess
+        import os
+
+        base = os.getenv("GITHUB_BASE_REF")
+        if base:
+            result = subprocess.run(
+                ["git", "diff", "--name-only", f"origin/{base}...HEAD"],
+                capture_output=True, text=True
+            )
+        else:
+            result = subprocess.run(
+                ["git", "diff", "HEAD", "--name-only"],
+                capture_output=True, text=True
+            )
+        return result.stdout.strip().split("\n")
+
     def _has_js_files(self) -> bool:
-        result = subprocess.run(
-            ["git", "diff", "HEAD", "--name-only"],
-            capture_output=True, text=True
-        )
-        files = result.stdout.strip().split("\n")
+        files = self._get_changed_files()
         return any(f.endswith((".js", ".ts", ".jsx", ".tsx")) for f in files)
 
     def _has_py_files(self) -> bool:
-        result = subprocess.run(
-            ["git", "diff", "HEAD", "--name-only"],
-            capture_output=True, text=True
-        )
-        files = result.stdout.strip().split("\n")
+        files = self._get_changed_files()
         return any(f.endswith(".py") for f in files)
-
+    
     def _run_eslint(self) -> str:
         result = subprocess.run(
             ["npx", "eslint", "--ext", ".js,.ts,.jsx,.tsx", "."],
