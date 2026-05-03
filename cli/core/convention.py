@@ -3,6 +3,7 @@ from rich.console import Console
 
 console = Console()
 
+
 class ConventionChecker:
     def check(self) -> str:
         results = []

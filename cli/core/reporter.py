@@ -6,6 +6,7 @@ from rich.table import Table
 
 console = Console()
 
+
 class Reporter:
     def __init__(self):
         self.report_dir = "qa-reports"

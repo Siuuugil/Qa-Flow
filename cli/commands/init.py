@@ -4,6 +4,7 @@ from rich.prompt import Prompt, Confirm
 
 console = Console()
 
+
 @click.command()
 def init():
     """QA-Flow 초기 설정"""

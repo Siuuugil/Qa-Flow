@@ -6,6 +6,7 @@ from pathlib import Path
 
 console = Console()
 
+
 @click.command()
 @click.option("--provider",
               type=click.Choice(["claude", "gemini"]),

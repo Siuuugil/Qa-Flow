@@ -21,7 +21,15 @@ console = Console()
               default=None,
               help="AI Provider 선택 (기본값: .env 설정 따름)")
 @click.option("--focus",
-              type=click.Choice(["structure", "convention", "security", "bug", "qa", "dev", "performance", "test", "general"]),
+              type=click.Choice(["structure",
+                                 "convention",
+                                 "security",
+                                 "bug",
+                                 "qa",
+                                 "dev",
+                                 "performance",
+                                 "test",
+                                 "general"]),
               default=None,
               help="리뷰 관점 선택")
 @click.option("--file",
@@ -63,6 +71,7 @@ def scan(mode, report, provider, focus, file):
             if report:
                 run_report(ai_result, convention_result)
 
+
 def run_ai_review(provider: str, focus: str = None):
     """AI 코드 리뷰 실행"""
     console.print("[bold]AI 코드 리뷰 실행 중...[/bold]")
@@ -75,6 +84,7 @@ def run_ai_review(provider: str, focus: str = None):
 
     console.print(result)
     return result
+
 
 def run_ai_review_file(provider: str, focus: str = None, file: str = None):
     """특정 파일 AI 분석"""

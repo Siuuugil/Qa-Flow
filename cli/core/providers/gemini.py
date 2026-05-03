@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class GeminiProvider:
     def __init__(self, system_prompt: str = ""):
         api_key = os.getenv("GEMINI_API_KEY")

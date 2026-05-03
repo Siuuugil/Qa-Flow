@@ -6,6 +6,7 @@ import click
 
 console = Console()
 
+
 def print_banner():
     console.print("""
 [bold cyan]
@@ -17,6 +18,7 @@ def print_banner():
   ╚══▀▀═╝ ╚═╝  ╚═╝         ╚═╝     ╚══════╝ ╚═════╝  ╚══╝╚══╝
 [/bold cyan]""")
     console.print("[dim]AI-powered QA automation CLI[/dim]\n")
+
 
 @click.group()
 @click.version_option(version="0.1.3", prog_name="qa-flow")
