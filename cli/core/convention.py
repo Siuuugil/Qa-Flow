@@ -1,5 +1,4 @@
 import subprocess
-import os
 from rich.console import Console
 
 console = Console()
@@ -8,12 +7,10 @@ class ConventionChecker:
     def check(self) -> str:
         results = []
 
-        # ESLint 체크 (JS/TS 파일이 있을 때)
         if self._has_js_files():
             eslint_result = self._run_eslint()
             results.append(eslint_result)
 
-        # Python 파일 체크
         if self._has_py_files():
             flake8_result = self._run_flake8()
             results.append(flake8_result)
@@ -24,7 +21,6 @@ class ConventionChecker:
         return "\n".join(results)
 
     def _get_changed_files(self) -> list:
-        import subprocess
         import os
 
         base = os.getenv("GITHUB_BASE_REF")
@@ -47,7 +43,7 @@ class ConventionChecker:
     def _has_py_files(self) -> bool:
         files = self._get_changed_files()
         return any(f.endswith(".py") for f in files)
-    
+
     def _run_eslint(self) -> str:
         try:
             result = subprocess.run(

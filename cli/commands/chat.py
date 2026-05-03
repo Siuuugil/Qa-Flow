@@ -1,8 +1,8 @@
 import click
+import os
 from rich.console import Console
 from dotenv import load_dotenv
 from pathlib import Path
-import os
 
 console = Console()
 
@@ -14,12 +14,11 @@ console = Console()
 def chat(provider):
     """AI와 자유롭게 대화"""
 
-    # 현재 작업 디렉토리에서 .env 찾기
     load_dotenv(dotenv_path=Path.cwd() / ".env", encoding="utf-8")
 
     ai_provider = provider or os.getenv("AI_PROVIDER", "gemini")
 
-    console.print(f"\n[bold cyan]QA-Flow Chat[/bold cyan]")
+    console.print("\n[bold cyan]QA-Flow Chat[/bold cyan]")
     console.print(f"Provider: [yellow]{ai_provider}[/yellow]")
     console.print("[dim]종료하려면 exit 또는 quit 입력[/dim]\n")
 

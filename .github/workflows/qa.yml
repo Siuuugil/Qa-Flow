@@ -46,9 +46,27 @@ jobs:
             const fs = require('fs');
             const result = fs.readFileSync('qa_result.txt', 'utf8');
             const body = '## QA-Flow 분석 결과\n\n<details>\n<summary>상세 분석 리포트 열기 (클릭)</summary>\n\n```\n' + result + '\n```\n\n</details>';
-            await github.rest.issues.createComment({
+
+            const comments = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: body
             });
+
+            const existing = comments.data.find(c => c.body.includes('QA-Flow 분석 결과'));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                comment_id: existing.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
