@@ -78,4 +78,5 @@ class Reporter:
             console.print("[dim]Supabase 저장 완료[/dim]")
 
         except Exception as e:
+            
             console.print(f"[dim]Supabase 저장 실패: {str(e)}[/dim]")

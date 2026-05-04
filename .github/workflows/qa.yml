@@ -46,8 +46,38 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const fs = require('fs');
-            const result = fs.readFileSync('qa_result.txt', 'utf8');
-            const body = '## QA-Flow 분석 결과\n\n<details>\n<summary>상세 분석 리포트 열기 (클릭)</summary>\n\n```\n' + result + '\n```\n\n</details>';
+            const raw = fs.readFileSync('qa_result.txt', 'utf8');
+
+            const conventionMatch = raw.match(/컨벤션 체크 실행 중\.\.\.([\s\S]*?)AI 코드 리뷰 실행 중/);
+            const aiMatch = raw.match(/AI 코드 리뷰 실행 중\.\.\.([\s\S]*?)리포트 생성 중/);
+            const timeMatch = raw.match(/(\d{8}_\d{6})/);
+
+            const convention = conventionMatch ? conventionMatch[1].trim() : '결과 없음';
+            const aiReview = aiMatch ? aiMatch[1].trim() : '결과 없음';
+            const timestamp = timeMatch ? timeMatch[1] : '-';
+
+            const body = [
+              '## QA-Flow 분석 결과',
+              '',
+              `> 분석 시각: \`${timestamp}\``,
+              '',
+              '---',
+              '',
+              '### 컨벤션 체크',
+              '```',
+              convention,
+              '```',
+              '',
+              '---',
+              '',
+              '### AI 코드 리뷰',
+              '',
+              aiReview,
+              '',
+              '---',
+              '',
+              '<sub>QA-Flow by Siuuugil</sub>'
+            ].join('\n');
 
             const comments = await github.rest.issues.listComments({
               issue_number: context.issue.number,

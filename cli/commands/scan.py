@@ -43,7 +43,7 @@ def scan(mode, report, provider, focus, file):
     ai_provider = provider or os.getenv("AI_PROVIDER", "gemini")
 
     if file:
-        console.print(f"\n[bold cyan]파일 분석 모드[/bold cyan]")
+        console.print("\n[bold cyan]파일 분석 모드[/bold cyan]")
         console.print(f"파일: [yellow]{file}[/yellow]")
         console.print(f"AI Provider: [yellow]{ai_provider}[/yellow]")
         console.print(f"Focus: [yellow]{focus or 'default'}[/yellow]\n")
@@ -57,7 +57,7 @@ def scan(mode, report, provider, focus, file):
             run_ai_review_file(ai_provider, focus, file)
 
     else:
-        console.print(f"\n[bold cyan]QA-Flow 분석 시작[/bold cyan]")
+        console.print("\n[bold cyan]QA-Flow 분석 시작[/bold cyan]")
         console.print(f"모드: [yellow]{mode}[/yellow]")
         console.print(f"AI Provider: [yellow]{ai_provider}[/yellow]")
         console.print(f"Focus: [yellow]{focus or 'default'}[/yellow]")
