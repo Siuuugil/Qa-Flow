@@ -60,7 +60,7 @@ class Reporter:
 
             client = create_client(url, key)
 
-            repo = os.getenv("GITHUB_REPO", "unknown")
+            repo = os.getenv("GITHUB_REPOSITORY") or os.getenv("GITHUB_REPO", "unknown")
             provider = os.getenv("AI_PROVIDER", "unknown")
 
             client.table("reports").insert({
