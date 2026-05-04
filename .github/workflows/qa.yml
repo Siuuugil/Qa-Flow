@@ -50,11 +50,11 @@ jobs:
 
             const conventionMatch = raw.match(/컨벤션 체크 실행 중\.\.\.([\s\S]*?)AI 코드 리뷰 실행 중/);
             const aiMatch = raw.match(/AI 코드 리뷰 실행 중\.\.\.([\s\S]*?)리포트 생성 중/);
-            const timeMatch = raw.match(/report_(\d{8}_\d{6})\.json/);
+            const timeMatches = [...raw.matchAll(/report_(\d{8}_\d{6})\.json/g)];
+            const timestamp = timeMatches.length > 0 ? timeMatches[timeMatches.length - 1][1] : '-';
 
             const convention = conventionMatch ? conventionMatch[1].trim() : '결과 없음';
             const aiReview = aiMatch ? aiMatch[1].trim() : '결과 없음';
-            const timestamp = timeMatch ? timeMatch[1] : '-';
 
             const codeBlock = '```';
             const body = [
@@ -73,9 +73,7 @@ jobs:
               '',
               '### AI 코드 리뷰',
               '',
-              codeBlock + 'text',
               aiReview,
-              codeBlock,
               '',
               '---',
               '',
