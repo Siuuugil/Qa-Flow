@@ -59,7 +59,8 @@ class Reporter:
                 return
 
             client = create_client(url, key)
-
+            
+            #로컬에서는 GITHUB_REPOSITORY 환경변수가 없으므로, repo 이름을 환경변수에서 가져오거나 기본값으로 설정
             repo = os.getenv("GITHUB_REPOSITORY") or os.getenv("GITHUB_REPO", "unknown")
             provider = os.getenv("AI_PROVIDER", "unknown")
 
