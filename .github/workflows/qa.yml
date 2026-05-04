@@ -2,7 +2,7 @@ name: QA-Flow
 
 on:
   pull_request:
-    branches: [main]
+    branches: ["**"]
 
 jobs:
   qa-scan:
