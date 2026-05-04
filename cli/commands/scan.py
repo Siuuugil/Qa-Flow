@@ -52,7 +52,7 @@ def scan(mode, report, provider, focus, file):
             convention_result = run_convention_check_file(file)
             ai_result = run_ai_review_file(ai_provider, focus, file)
             if report:
-                run_report(ai_result, convention_result)
+                run_report(ai_result, convention_result, focus, mode)
         else:
             run_ai_review_file(ai_provider, focus, file)
 
@@ -69,7 +69,7 @@ def scan(mode, report, provider, focus, file):
             convention_result = run_convention_check()
             ai_result = run_ai_review(ai_provider, focus)
             if report:
-                run_report(ai_result, convention_result)
+                run_report(ai_result, convention_result, focus, mode)
 
 
 def run_ai_review(provider: str, focus: str = None):
@@ -171,13 +171,18 @@ def run_convention_check_file(file: str):
     return result
 
 
-def run_report(ai_result: str = "", convention_result: str = ""):
+def run_report(ai_result: str = "", convention_result: str = "", focus: str = None, mode: str = "full"):
     """리포트 생성"""
     console.print("[bold]리포트 생성 중...[/bold]")
 
     from cli.core.reporter import Reporter
 
     reporter = Reporter()
-    reporter.generate(ai_result=ai_result, convention_result=convention_result)
+    reporter.generate(
+        ai_result=ai_result,
+        convention_result=convention_result,
+        focus=focus or "general",
+        mode=mode
+    )
 
     console.print("[green]리포트 생성 완료![/green]")
