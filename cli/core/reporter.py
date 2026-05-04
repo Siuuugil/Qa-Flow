@@ -68,7 +68,7 @@ class Reporter:
 
             client.table("reports").insert({
                 "repo": repo,
-                "branch": os.getenv("GITHUB_BASE_REF", "local"),
+                "branch": os.getenv("GITHUB_HEAD_REF", "local"),
                 "provider": provider,
                 "focus": focus,
                 "mode": mode,
