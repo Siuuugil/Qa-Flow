@@ -56,6 +56,7 @@ jobs:
             const aiReview = aiMatch ? aiMatch[1].trim() : '결과 없음';
             const timestamp = timeMatch ? timeMatch[1] : '-';
 
+            const codeBlock = '```';
             const body = [
               '## QA-Flow 분석 결과',
               '',
@@ -64,17 +65,17 @@ jobs:
               '---',
               '',
               '### 컨벤션 체크',
-              '```',
+              codeBlock + 'text',
               convention,
-              '```',
+              codeBlock,
               '',
               '---',
               '',
               '### AI 코드 리뷰',
               '',
-              '```',
+              codeBlock + 'text',
               aiReview,
-              '```',
+              codeBlock,
               '',
               '---',
               '',
