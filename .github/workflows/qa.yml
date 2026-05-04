@@ -50,7 +50,7 @@ jobs:
 
             const conventionMatch = raw.match(/컨벤션 체크 실행 중\.\.\.([\s\S]*?)AI 코드 리뷰 실행 중/);
             const aiMatch = raw.match(/AI 코드 리뷰 실행 중\.\.\.([\s\S]*?)리포트 생성 중/);
-            const timeMatch = raw.match(/(\d{8}_\d{6})/);
+            const timeMatch = raw.match(/생성 시각.*?(\d{8}_\d{6})/);
 
             const convention = conventionMatch ? conventionMatch[1].trim() : '결과 없음';
             const aiReview = aiMatch ? aiMatch[1].trim() : '결과 없음';
@@ -64,17 +64,17 @@ jobs:
               '---',
               '',
               '### 컨벤션 체크',
-              '````',
+              '```',
               convention,
-              '````',
+              '```',
               '',
               '---',
               '',
               '### AI 코드 리뷰',
               '',
-              '````',
+              '```',
               aiReview,
-              '````',
+              '```',
               '',
               '---',
               '',
