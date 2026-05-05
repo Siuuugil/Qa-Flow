@@ -12,7 +12,7 @@ TC_PROMPT = """당신은 QA 엔지니어입니다.
 반드시 아래 JSON 형식으로만 답변하세요. 다른 텍스트는 절대 추가하지 마세요.
 
 [
-  {
+  {{
     "module": "모듈명 (예: 로그인, 결제, 회원가입)",
     "test_scenario": "테스트 시나리오 (예: 정상 로그인 확인)",
     "precondition": "사전 조건 (예: 회원가입 완료된 계정 존재)",
@@ -22,7 +22,7 @@ TC_PROMPT = """당신은 QA 엔지니어입니다.
     "priority": "Blocker 또는 Critical 또는 Major 또는 Minor 또는 Low",
     "severity": "Blocker 또는 Critical 또는 Major 또는 Minor 또는 Low",
     "test_type": "기능 또는 보안 또는 성능 또는 UI 또는 통합"
-  }
+  }}
 ]
 
 Priority/Severity 기준 (Jira 표준):
@@ -55,6 +55,7 @@ class TCGenerator:
 
     def _parse_tc(self, raw: str) -> list:
         """AI 응답에서 JSON 파싱"""
+        #console.print(f"[dim]AI 응답 원문:\n{raw[:500]}[/dim]")  # 잠시 디버그
         try:
             # 마크다운 코드블록 제거
             cleaned = re.sub(r"```(?:json)?", "", raw).strip().rstrip("`").strip()
@@ -205,8 +206,8 @@ class TCGenerator:
 
     def _create_summary_sheet(self, ws, tc_list, header_font, header_fill, border, center):
         """Summary 시트 생성"""
-        from openpyxl.styles import Font, PatternFill, Alignment
-        from openpyxl.utils import get_column_letter
+        from openpyxl.styles import Font, PatternFill, Alignment # noqa: F401
+        from openpyxl.utils import get_column_letter # noqa: F401
 
         ws.column_dimensions["A"].width = 20
         ws.column_dimensions["B"].width = 15

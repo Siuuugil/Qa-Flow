@@ -102,7 +102,7 @@ class AIReview:
     def review(self) -> str:
         diff = self._get_git_diff()
         if not diff:
-            return "변경된 코드가 없습니다. 없어요."
+            return "변경된 코드가 없습니다."
         return self.provider.review(diff)
 
     def _get_git_diff(self) -> str:
@@ -115,13 +115,17 @@ class AIReview:
             result = subprocess.run(
                 ["git", "diff", f"origin/{base}...HEAD"],
                 capture_output=True,
-                text=True
+                text=True,
+                encoding="utf-8",
+                errors="replace"
             )
         else:
             # 로컬 환경
             result = subprocess.run(
                 ["git", "diff", "HEAD"],
                 capture_output=True,
-                text=True
+                text=True,
+                encoding="utf-8",
+                errors="replace"
             )
         return result.stdout

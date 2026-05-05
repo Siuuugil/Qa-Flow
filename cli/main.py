@@ -1,8 +1,12 @@
-from cli.commands.chat import chat
-from cli.commands.init import init
-from cli.commands.scan import scan
-from rich.console import Console
-import click
+import os
+os.environ["PYTHONIOENCODING"] = "utf-8"  # noqa: E402
+os.environ["PYTHONUTF8"] = "1"  # noqa: E402
+
+from cli.commands.chat import chat  # noqa: E402
+from cli.commands.init import init  # noqa: E402
+from cli.commands.scan import scan  # noqa: E402
+from rich.console import Console  # noqa: E402
+import click  # noqa: E402
 
 console = Console()
 
@@ -21,7 +25,7 @@ def print_banner():
 
 
 @click.group()
-@click.version_option(version="0.1.6", prog_name="qa-flow")
+@click.version_option(version="0.1.7", prog_name="qa-flow")
 def main():
     """QA-Flow: AI 기반 코드 품질 자동화 툴"""
     pass

@@ -44,6 +44,7 @@ class Reporter:
         table.add_row("저장 경로", report_path)
 
         console.print(table)
+        return report_path
 
     def _save_to_supabase(self, ai_result: str, convention_result: str, has_violations: bool, focus: str = "general", mode: str = "full"):
         try:

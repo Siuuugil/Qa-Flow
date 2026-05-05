@@ -63,12 +63,11 @@ def scan(mode, report, provider, focus, file, tc, jira):
             convention_result = run_convention_check_file(file)
             ai_result = run_ai_review_file(ai_provider, focus, file)
             if report:
-                run_report(ai_result, convention_result, focus, mode)
+                run_report(ai_result, convention_result, focus, mode, auto_tc=tc, provider=ai_provider)
         else:
             ai_result = run_ai_review_file(ai_provider, focus, file)
-
-        if tc:
-            run_tc_generation(ai_provider, ai_result, convention_result, jira)
+            if tc:
+                run_tc_generation(ai_provider, ai_result, "", jira)
 
     else:
         console.print("\n[bold cyan]QA-Flow 분석 시작[/bold cyan]")
@@ -82,14 +81,13 @@ def scan(mode, report, provider, focus, file, tc, jira):
 
         if mode == "ai-only":
             ai_result = run_ai_review(ai_provider, focus)
+            if tc:
+                run_tc_generation(ai_provider, ai_result, "", jira)
         elif mode == "full":
             convention_result = run_convention_check()
             ai_result = run_ai_review(ai_provider, focus)
             if report:
-                run_report(ai_result, convention_result, focus, mode)
-
-        if tc:
-            run_tc_generation(ai_provider, ai_result, convention_result, jira)
+                run_report(ai_result, convention_result, focus, mode, auto_tc=tc, provider=ai_provider)
 
 
 def run_ai_review(provider: str, focus: str = None):
@@ -191,14 +189,14 @@ def run_convention_check_file(file: str):
     return result
 
 
-def run_report(ai_result: str = "", convention_result: str = "", focus: str = None, mode: str = "full"):
+def run_report(ai_result: str = "", convention_result: str = "", focus: str = None, mode: str = "full", auto_tc: bool = False, provider: str = None):
     """리포트 생성"""
     console.print("[bold]리포트 생성 중...[/bold]")
 
     from cli.core.reporter import Reporter
 
     reporter = Reporter()
-    reporter.generate(
+    report_path = reporter.generate(
         ai_result=ai_result,
         convention_result=convention_result,
         focus=focus or "general",
@@ -207,17 +205,35 @@ def run_report(ai_result: str = "", convention_result: str = "", focus: str = No
 
     console.print("[green]리포트 생성 완료![/green]")
 
+    # --tc 없으면 물어보기
+    if not auto_tc:
+        import click
+        if click.confirm("\n현재 리뷰 기준으로 TC를 만들어드릴까요?", default=False):
+            auto_tc = True
+
+    if auto_tc:
+        if not ai_result or "변경된 코드가 없습니다" in ai_result:
+            console.print("[yellow]TC 생성 건너뜀: AI 분석 결과가 없습니다.[/yellow]")
+            return
+        tc_path = run_tc_generation(provider or os.getenv("AI_PROVIDER", "gemini"), ai_result, convention_result)
+        if report_path and tc_path:
+            console.print(f"\n[dim]리포트: {report_path} → TC: {tc_path}[/dim]")
+
 
 def run_tc_generation(provider: str, ai_result: str, convention_result: str = "", upload_jira: bool = False):
     """TC 엑셀 생성 및 Jira 등록"""
-    from cli.core.ai_review import AIReview
     from cli.core.tc_generator import TCGenerator, upload_to_jira
+
+    if provider == "gemini":
+        from cli.core.providers.gemini import GeminiProvider
+        p = GeminiProvider(system_prompt="")
+    else:
+        from cli.core.providers.claude import ClaudeProvider
+        p = ClaudeProvider(system_prompt="")
 
     console.print("\n[bold cyan]TC 자동 생성 시작[/bold cyan]")
 
-    reviewer = AIReview(provider=provider, focus=None)
-    generator = TCGenerator(provider_instance=reviewer.provider)
-
+    generator = TCGenerator(provider_instance=p)
     tc_list = generator.generate_from_analysis(ai_result, convention_result)
 
     if not tc_list:
@@ -247,11 +263,11 @@ def run_tc_generation(provider: str, ai_result: str, convention_result: str = ""
         if failed:
             console.print(f"[yellow]등록 실패: {len(failed)}건 → {', '.join(failed)}[/yellow]")
 
-        # 엑셀의 Jira_Issue 컬럼 업데이트
         if created and excel_path:
             _update_excel_jira_keys(excel_path, created)
 
     console.print(f"\n[bold green]TC 작업 완료![/bold green] 파일: {excel_path}")
+    return excel_path
 
 
 def _update_excel_jira_keys(excel_path: str, created: dict):

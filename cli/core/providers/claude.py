@@ -14,18 +14,22 @@ class ClaudeProvider:
         self.system_prompt = system_prompt
 
     def review(self, diff: str) -> str:
-        message = self.client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=1024,
-            system=self.system_prompt,
-            messages=[
-                {
-                    "role": "user",
-                    "content": f"다음 코드 변경사항을 리뷰해주세요:\n\n{diff}"
-                }
-            ]
-        )
-        return message.content[0].text
+        if not diff:
+            return "분석할 코드 변경사항이 없습니다."
+        try:
+            if self.system_prompt:
+                content = f"다음 코드 변경사항을 리뷰해주세요:\n\n{diff}"
+            else:
+                content = diff
+            message = self.client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=1024,
+                system=self.system_prompt if self.system_prompt else "You are a helpful assistant.",
+                messages=[{"role": "user", "content": content}]
+            )
+            return message.content[0].text
+        except Exception as e:
+            return f"Claude API 오류: {str(e)}"
 
     def chat(self, history: list) -> str:
         try:

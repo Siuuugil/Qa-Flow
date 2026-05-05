@@ -28,12 +28,12 @@ class ConventionChecker:
         if base:
             result = subprocess.run(
                 ["git", "diff", "--name-only", f"origin/{base}...HEAD"],
-                capture_output=True, text=True
+                capture_output=True, text=True, encoding="utf-8"
             )
         else:
             result = subprocess.run(
                 ["git", "diff", "HEAD", "--name-only"],
-                capture_output=True, text=True
+                capture_output=True, text=True, encoding="utf-8"
             )
         return result.stdout.strip().split("\n")
 
@@ -49,7 +49,7 @@ class ConventionChecker:
         try:
             result = subprocess.run(
                 ["npx", "eslint", "--ext", ".js,.ts,.jsx,.tsx", "."],
-                capture_output=True, text=True
+                capture_output=True, text=True, encoding="utf-8"
             )
             if result.returncode == 0:
                 return "[ESLint] 컨벤션 위반 없음"
@@ -60,8 +60,8 @@ class ConventionChecker:
     def _run_flake8(self) -> str:
         try:
             result = subprocess.run(
-                ["flake8", "--max-line-length=100", "."],
-                capture_output=True, text=True
+                ["flake8", "--max-line-length=100", "--exclude=dashboard/node_modules,node_modules,.git","."],
+                capture_output=True, text=True, encoding="utf-8", errors="replace"
             )
             if result.returncode == 0:
                 return "[Flake8] 컨벤션 위반 없음"
