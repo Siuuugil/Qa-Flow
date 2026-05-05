@@ -21,7 +21,7 @@ def print_banner():
 
 
 @click.group()
-@click.version_option(version="0.1.5", prog_name="qa-flow")
+@click.version_option(version="0.1.6", prog_name="qa-flow")
 def main():
     """QA-Flow: AI 기반 코드 품질 자동화 툴"""
     pass

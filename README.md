@@ -79,88 +79,6 @@ qa-flow chat                                     # AI와 자유 대화
 
 ---
 
-## 설치 및 사용법
-
-### 설치
-```bash
-pip install qa-flow
-```
-
-### 1단계: 초기 설정
-
-```bash
-qa-flow init
-```
-
-![초기 설정](assets/1__qa-flow_init.png)
-
-- AI Provider 선택 (Claude / Gemini)
-- API 키 입력
-- GitHub Token 및 레포 입력
-- Supabase 연동 여부 선택
-
----
-
-### 2단계: GitHub Actions 설정
-
-**GitHub Secrets 등록**
-
-레포지토리 → Settings → Secrets and variables → Actions
-
-![GitHub Secrets 설정](assets/2__web_setting.png)
-
-New repository secret 클릭
-
-![New Secret](assets/2__web_setting2.png)
-
-아래 5가지 Secret 등록 후 완료
-
-![Secret 목록](assets/2__web_setting3.png)
-
-```
-AI_PROVIDER       # claude 또는 gemini
-GEMINI_API_KEY    # Gemini API 키
-ANTHROPIC_API_KEY # Claude API 키
-SUPABASE_URL      # Supabase 프로젝트 URL
-SUPABASE_KEY      # Supabase API 키
-```
-
-**qa.yml 파일 추가**
-
-이 레포의 `.github/workflows/qa.yml` 파일을 본인 레포에 복사하세요.
-
-![qa.yml 설정](assets/4__qa.yml.png)
-
----
-
-## 사용 예시
-
-### 로컬에서 특정 파일 분석
-
-```bash
-qa-flow scan --file UserController.java --mode full --report
-```
-
-![분석 실행](assets/5__example1.png)
-
-![분석 결과](assets/5__example2.png)
-
-![리포트 요약](assets/5__example3.png)
-
-### Supabase DB 저장 확인
-
-![DB 저장](assets/6__example_db.png)
-
-### 대시보드 확인
-
-![대시보드](assets/7__vercel.png)
-
-### 로컬 리포트 JSON 파일
-
-![리포트 JSON](assets/report_json.png)
-
----
-
 ## 프로젝트 구조
 
 ```
@@ -193,13 +111,110 @@ Qa-Flow/
 
 ---
 
+## 설치 및 사용법
+
+### 설치
+```bash
+pip install qa-flow
+```
+
+### 1단계: 초기 설정
+
+```bash
+qa-flow init
+```
+
+![초기 설정 1](assets/1__qa-flow_init.png)
+![초기 설정 2](assets/1__qa-flow_init2.png)
+
+- AI Provider 선택 (Claude / Gemini)
+- API 키 입력
+- GitHub Token 및 레포 입력
+- Supabase 연동 여부 선택
+- qa.yml 생성 여부 선택 (y 권장)
+
+---
+
+### 2단계: GitHub Actions 설정
+
+**GitHub Secrets 등록**
+
+레포지토리 → Settings → Secrets and variables → Actions
+
+![GitHub Secrets 설정](assets/2__web_setting.png)
+
+New repository secret 클릭
+
+![New Secret](assets/2__web_setting2.png)
+
+아래 5가지 Secret 등록 후 완료
+
+![Secret 목록](assets/2__web_setting3.png)
+
+```
+AI_PROVIDER       # claude 또는 gemini
+GEMINI_API_KEY    # Gemini API 키
+ANTHROPIC_API_KEY # Claude API 키
+SUPABASE_URL      # Supabase 프로젝트 URL
+SUPABASE_KEY      # Supabase API 키
+```
+
+---
+
+## 사용 예시
+
+### 로컬에서 특정 파일 분석
+
+```bash
+qa-flow scan --file UserController.java --mode full --report
+```
+
+![분석 실행](assets/5__example1.png)
+
+![분석 결과](assets/5__example2.png)
+
+![리포트 요약](assets/5__example3.png)
+
+### Supabase DB 저장 확인
+
+![DB 저장](assets/6__example_db.png)
+
+### 대시보드 확인
+
+![대시보드](assets/7__vercel.png)
+
+### 로컬 리포트 JSON 파일
+
+![리포트 JSON](assets/report_json.png)
+
+---
+
+## CI/CD 자동화 예시 (GitHub Actions + PR)
+
+PR을 생성하면 자동으로 QA-Flow가 실행됩니다.
+
+**1. 다른 프로젝트에 적용**
+
+![다른 프로젝트 테스트](assets/other_project_test.png)
+
+**2. PR 생성**
+
+![PR](assets/PR.png)
+
+**3. Actions 자동 실행 및 PR 코멘트**
+
+![Actions](assets/actions.png)
+
+---
+
 ## 추후 계획
 
-- Jira 연동 (버그 발견 시 자동 이슈 생성)
+- 리포트 기반 TC 자동 생성
+- Jira 연동 (버그 발견 시 자동 이슈 생성) 
+- 폴더 전체 분석
 - 품질 점수 도입
 - 트렌드 차트 
-- Focus별 분포도 파이 차트
-- 폴더 전체 분석 
+- Focus별 분포도 파이 차트 
 
 ---
 
