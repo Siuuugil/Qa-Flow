@@ -35,7 +35,15 @@ console = Console()
 @click.option("--file",
               default=None,
               help="특정 파일 직접 분석 (git diff 없이)")
-def scan(mode, report, provider, focus, file):
+@click.option("--tc",
+              is_flag=True,
+              default=False,
+              help="분석 결과 기반 TC 엑셀 자동 생성")
+@click.option("--jira",
+              is_flag=True,
+              default=False,
+              help="생성된 TC를 Jira 이슈로 자동 등록")
+def scan(mode, report, provider, focus, file, tc, jira):
     """코드 분석 실행"""
 
     load_dotenv(dotenv_path=Path.cwd() / ".env", encoding="utf-8")
@@ -48,13 +56,19 @@ def scan(mode, report, provider, focus, file):
         console.print(f"AI Provider: [yellow]{ai_provider}[/yellow]")
         console.print(f"Focus: [yellow]{focus or 'default'}[/yellow]\n")
 
+        convention_result = ""
+        ai_result = ""
+
         if mode == "full":
             convention_result = run_convention_check_file(file)
             ai_result = run_ai_review_file(ai_provider, focus, file)
             if report:
                 run_report(ai_result, convention_result, focus, mode)
         else:
-            run_ai_review_file(ai_provider, focus, file)
+            ai_result = run_ai_review_file(ai_provider, focus, file)
+
+        if tc:
+            run_tc_generation(ai_provider, ai_result, convention_result, jira)
 
     else:
         console.print("\n[bold cyan]QA-Flow 분석 시작[/bold cyan]")
@@ -63,13 +77,19 @@ def scan(mode, report, provider, focus, file):
         console.print(f"Focus: [yellow]{focus or 'default'}[/yellow]")
         console.print(f"리포트 생성: [yellow]{report}[/yellow]\n")
 
+        convention_result = ""
+        ai_result = ""
+
         if mode == "ai-only":
-            run_ai_review(ai_provider, focus)
+            ai_result = run_ai_review(ai_provider, focus)
         elif mode == "full":
             convention_result = run_convention_check()
             ai_result = run_ai_review(ai_provider, focus)
             if report:
                 run_report(ai_result, convention_result, focus, mode)
+
+        if tc:
+            run_tc_generation(ai_provider, ai_result, convention_result, jira)
 
 
 def run_ai_review(provider: str, focus: str = None):
@@ -186,3 +206,65 @@ def run_report(ai_result: str = "", convention_result: str = "", focus: str = No
     )
 
     console.print("[green]리포트 생성 완료![/green]")
+
+
+def run_tc_generation(provider: str, ai_result: str, convention_result: str = "", upload_jira: bool = False):
+    """TC 엑셀 생성 및 Jira 등록"""
+    from cli.core.ai_review import AIReview
+    from cli.core.tc_generator import TCGenerator, upload_to_jira
+
+    console.print("\n[bold cyan]TC 자동 생성 시작[/bold cyan]")
+
+    reviewer = AIReview(provider=provider, focus=None)
+    generator = TCGenerator(provider_instance=reviewer.provider)
+
+    tc_list = generator.generate_from_analysis(ai_result, convention_result)
+
+    if not tc_list:
+        console.print("[red]TC 생성 실패: AI 응답을 파싱할 수 없습니다.[/red]")
+        return
+
+    console.print(f"[green]TC {len(tc_list)}개 생성 완료![/green]")
+
+    excel_path = generator.export_excel(tc_list)
+    if excel_path:
+        console.print(f"[green]엑셀 저장 완료: {excel_path}[/green]")
+    else:
+        console.print("[red]엑셀 저장 실패[/red]")
+        return
+
+    if upload_jira:
+        console.print("\n[bold cyan]Jira 이슈 등록 시작[/bold cyan]")
+        result = upload_to_jira(tc_list, excel_path)
+        created = result.get("created", {})
+        failed = result.get("failed", [])
+
+        if created:
+            console.print(f"[green]Jira 등록 완료: {len(created)}건[/green]")
+            for tc_id, issue_key in created.items():
+                console.print(f"  [dim]{tc_id} → {issue_key}[/dim]")
+
+        if failed:
+            console.print(f"[yellow]등록 실패: {len(failed)}건 → {', '.join(failed)}[/yellow]")
+
+        # 엑셀의 Jira_Issue 컬럼 업데이트
+        if created and excel_path:
+            _update_excel_jira_keys(excel_path, created)
+
+    console.print(f"\n[bold green]TC 작업 완료![/bold green] 파일: {excel_path}")
+
+
+def _update_excel_jira_keys(excel_path: str, created: dict):
+    """엑셀 Jira_Issue 컬럼에 이슈 키 업데이트"""
+    try:
+        from openpyxl import load_workbook
+        wb = load_workbook(excel_path)
+        ws = wb.active
+        # TC_ID는 1번 컬럼, Jira_Issue는 13번 컬럼
+        for row in ws.iter_rows(min_row=2):
+            tc_id = row[0].value
+            if tc_id and tc_id in created:
+                row[12].value = created[tc_id]
+        wb.save(excel_path)
+    except Exception as e:
+        console.print(f"[dim]엑셀 Jira 키 업데이트 실패: {str(e)}[/dim]")
