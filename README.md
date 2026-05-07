@@ -34,6 +34,8 @@ qa-flow scan --mode ai-only                      # AI 코드 리뷰
 qa-flow scan --mode full --report                # 컨벤션 체크 + AI 리뷰 + 리포트 저장
 qa-flow scan --file UserService.java --focus bug # 특정 파일 버그 분석
 qa-flow chat                                     # AI와 자유 대화
+qa-flow tc                                       # 마지막 리포트로 TC 생성
+qa-flow jira                                     # 마지막 TC로 Jira 등록
 ```
 
 ### Focus 옵션 (9가지 분석 관점)
@@ -73,6 +75,7 @@ qa-flow chat                                     # AI와 자유 대화
 | AI | Claude API, Gemini API |
 | 자동화 | GitHub Actions |
 | 컨벤션 체크 | ESLint, Flake8 |
+| TC/이슈 관리 | openpyxl, Jira REST API |
 | 대시보드 | Next.js 15, Tailwind CSS |
 | DB | Supabase (PostgreSQL) |
 | 배포 | Vercel, PyPI |
@@ -87,11 +90,14 @@ Qa-Flow/
 │   ├── commands/
 │   │   ├── init.py       # qa-flow init
 │   │   ├── scan.py       # qa-flow scan
-│   │   └── chat.py       # qa-flow chat
+│   │   ├── chat.py       # qa-flow chat
+│   │   ├── tc.py         # qa-flow tc
+│   │   └── jira_cmd.py   # qa-flow jira
 │   ├── core/
 │   │   ├── ai_review.py  # AI 리뷰 엔진
 │   │   ├── convention.py # 컨벤션 체크
 │   │   ├── reporter.py   # 리포트 생성 및 Supabase 저장
+│   │   ├── tc_generator.py # TC 생성 및 Jira 연동
 │   │   └── providers/
 │   │       ├── claude.py # Claude API
 │   │       └── gemini.py # Gemini API
@@ -124,8 +130,8 @@ pip install qa-flow
 qa-flow init
 ```
 
-![초기 설정 1](assets/1__qa-flow_init.png)
-![초기 설정 2](assets/1__qa-flow_init2.png)
+![초기 설정 1](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/1__qa-flow_init.png)
+![초기 설정 2](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/1__qa-flow_init2.png)
 
 - AI Provider 선택 (Claude / Gemini)
 - API 키 입력
@@ -141,15 +147,15 @@ qa-flow init
 
 레포지토리 → Settings → Secrets and variables → Actions
 
-![GitHub Secrets 설정](assets/2__web_setting.png)
+![GitHub Secrets 설정](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/2__web_setting.png)
 
 New repository secret 클릭
 
-![New Secret](assets/2__web_setting2.png)
+![New Secret](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/2__web_setting2.png)
 
 아래 5가지 Secret 등록 후 완료
 
-![Secret 목록](assets/2__web_setting3.png)
+![Secret 목록](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/2__web_setting3.png)
 
 ```
 AI_PROVIDER       # claude 또는 gemini
@@ -169,23 +175,37 @@ SUPABASE_KEY      # Supabase API 키
 qa-flow scan --file UserController.java --mode full --report
 ```
 
-![분석 실행](assets/5__example1.png)
+![분석 실행](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/5__example1.png)
 
-![분석 결과](assets/5__example2.png)
+![분석 결과](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/5__example2.png)
 
-![리포트 요약](assets/5__example3.png)
+![리포트 요약](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/5__example3.png)
 
 ### Supabase DB 저장 확인
 
-![DB 저장](assets/6__example_db.png)
+![DB 저장](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/6__example_db.png)
 
 ### 대시보드 확인
 
-![대시보드](assets/7__vercel.png)
+![대시보드](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/7__vercel.png)
 
 ### 로컬 리포트 JSON 파일
 
-![리포트 JSON](assets/report_json.png)
+![리포트 JSON](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/report_json.png)
+
+---
+
+### TC 자동생성 & Jira 연동
+
+AI 분석 결과 기반 실무 포맷 TC 엑셀 자동 생성
+![TC_Cmd](assets/tc_create.png)
+![TC_Excel](assets/tc_excel.png)
+
+생성된 TC를 Jira 이슈로 자동 등록
+![Jira_Cmd](assets/jira_create.png)
+![Jira_Web1](assets/jira_web1.png)
+![Jira_Web2](assets/jira_web2.png)
+
 
 ---
 
@@ -195,23 +215,23 @@ PR을 생성하면 자동으로 QA-Flow가 실행됩니다.
 
 **1. 다른 프로젝트에 적용**
 
-![다른 프로젝트 테스트](assets/other_project_test.png)
+![다른 프로젝트 테스트](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/other_project_test.png)
 
 **2. PR 생성**
 
-![PR](assets/PR.png)
+![PR](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/PR.png)
 
 **3. Actions 자동 실행 및 PR 코멘트**
 
-![Actions](assets/actions.png)
+![Actions](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/actions.png)
 
 ---
 
 ## 추후 계획
 
-- 리포트 기반 TC 자동 생성
-- Jira 연동 (버그 발견 시 자동 이슈 생성) 
-- 폴더 전체 분석
+- 리포트 기반 TC 자동 생성 => 0.1.8v 업데이트 완료
+- Jira 연동 (버그 발견 시 자동 이슈 생성) =>  0.1.8v 업데이트 완료
+- 폴더 전체 분석 
 - 품질 점수 도입
 - 트렌드 차트 
 - Focus별 분포도 파이 차트 

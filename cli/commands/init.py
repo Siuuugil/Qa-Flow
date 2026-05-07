@@ -47,6 +47,25 @@ GITHUB_REPO={github_repo}
     if use_supabase:
         env_content += f"SUPABASE_URL={supabase_url}\nSUPABASE_KEY={supabase_key}\n"
 
+    # Jira 설정
+    use_jira = Confirm.ask("\nJira 연동할까요? (TC 자동 등록 기능)", default=False)
+    jira_url = ""
+    jira_email = ""
+    jira_token = ""
+    jira_project = ""
+
+    if use_jira:
+        jira_url = Prompt.ask("Jira URL (예: https://yourteam.atlassian.net)")
+        jira_email = Prompt.ask("Jira 계정 이메일")
+        jira_token = click.prompt("Jira API Token", hide_input=True)
+        jira_project = Prompt.ask("Jira 프로젝트 키 (예: QA, DEV)")
+        env_content += (
+            f"JIRA_URL={jira_url}\n"
+            f"JIRA_EMAIL={jira_email}\n"
+            f"JIRA_API_TOKEN={jira_token}\n"
+            f"JIRA_PROJECT_KEY={jira_project}\n"
+        )
+
     with open(".env", "w", encoding="utf-8") as f:
         f.write(env_content)
 

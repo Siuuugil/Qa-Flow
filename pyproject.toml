@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "qa-flow"
-version = "0.1.6"
+version = "0.1.8"
 description = "AI-powered QA automation CLI tool"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -28,6 +28,7 @@ dependencies = [
     "requests>=2.31.0",
     "flake8>=6.0.0",
     "supabase>=2.0.0",
+    "openpyxl>=3.1.0",
 ]
 
 [project.urls]
