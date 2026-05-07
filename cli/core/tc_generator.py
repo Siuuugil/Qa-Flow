@@ -290,13 +290,13 @@ def upload_to_jira(tc_list: list, output_path: str = "") -> dict:
                 f"*Test Type*: {tc.get('test_type', '')}\n"
                 f"*TC ID*: {tc_id}"
             )
-
+            
             payload = {
                 "fields": {
                     "project": {"key": jira_project},
                     "summary": f"[{tc_id}] {tc.get('test_scenario', '')}",
                     "description": description,
-                    "issuetype": {"name": "Test"},
+                    "issuetype": {"name": "Task"},
                     "priority": {"name": priority_name},
                 }
             }

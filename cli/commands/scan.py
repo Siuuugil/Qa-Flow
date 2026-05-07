@@ -8,19 +8,19 @@ console = Console()
 
 
 @click.command()
-@click.option("--mode",
+@click.option("--mode", "-m",
               type=click.Choice(["ai-only", "full"]),
               default="ai-only",
               help="실행 모드 선택")
-@click.option("--report",
+@click.option("--report", "-r",
               is_flag=True,
               default=False,
               help="리포트 파일 생성")
-@click.option("--provider",
+@click.option("--provider", "-p",
               type=click.Choice(["claude", "gemini"]),
               default=None,
               help="AI Provider 선택 (기본값: .env 설정 따름)")
-@click.option("--focus",
+@click.option("--focus", "-f",
               type=click.Choice(["structure",
                                  "convention",
                                  "security",
@@ -32,17 +32,18 @@ console = Console()
                                  "general"]),
               default=None,
               help="리뷰 관점 선택")
-@click.option("--file",
+@click.option("--file", "-F",
               default=None,
               help="특정 파일 직접 분석 (git diff 없이)")
-@click.option("--tc",
+@click.option("--tc", "-t",
               is_flag=True,
               default=False,
               help="분석 결과 기반 TC 엑셀 자동 생성")
-@click.option("--jira",
+@click.option("--jira", "-j",
               is_flag=True,
               default=False,
               help="생성된 TC를 Jira 이슈로 자동 등록")
+
 def scan(mode, report, provider, focus, file, tc, jira):
     """코드 분석 실행"""
 
