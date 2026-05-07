@@ -198,13 +198,13 @@ qa-flow scan --file UserController.java --mode full --report
 ### TC 자동생성 & Jira 연동
 
 AI 분석 결과 기반 실무 포맷 TC 엑셀 자동 생성
-![TC_Cmd](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/tc_create.png)
-![TC_Excel](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/tc_excel.png)
+![TC_Cmd](assets/tc_create.png)
+![TC_Excel](assets/tc_excel.png)
 
 생성된 TC를 Jira 이슈로 자동 등록
-![Jira_Cmd](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/jira_create.png)
-![Jira_Web1](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/jira_web1.png)
-![Jira_Web2](https://raw.githubusercontent.com/Siuuugil/Qa-Flow/main/assets/jira_web2.png)
+![Jira_Cmd](assets/jira_create.png)
+![Jira_Web1](assets/jira_web1.png)
+![Jira_Web2](assets/jira_web2.png)
 
 
 ---
